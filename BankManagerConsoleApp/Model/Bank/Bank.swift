@@ -8,7 +8,7 @@
 import Foundation
 
 class Bank {
-    private let clientQueue: Queue<Client>
+    private var clientQueue: Queue<Client>
     private let clerkCount: Int
     private let spendingTimeForAClient: Float
     private(set) var totalWorkingTime: Float = 0
@@ -16,36 +16,36 @@ class Bank {
     private lazy var bankClerkQueue: Queue<BankClerk> = {
         return makeBankClerkQueue()
     }()
-    
+
     init(clientQueue: Queue<Client>, clerkCount: Int, spendingTimeForAClient: Float) {
         self.clientQueue = clientQueue
         self.clerkCount = clerkCount
         self.spendingTimeForAClient = spendingTimeForAClient
     }
-    
+
     private func makeBankClerkQueue() -> Queue<BankClerk> {
         var bankClerkQueue = Queue<BankClerk>()
-        
+
         for _ in 1...clerkCount {
-            let bankClerk = BankClerk(isWorking: false)
+            let bankClerk = BankClerk(bank: self)
             bankClerkQueue.enqueue(bankClerk)
         }
-        
+
         return bankClerkQueue
     }
-    
+
     func startWork() {
         while bankClerkQueue.isEmpty() == false {
             let bankClerk = bankClerkQueue.dequeue()
             bankClerk?.work()
         }
     }
-    
+
     func updateWorkData() {
         totalWorkingTime += spendingTimeForAClient
         finishedClientCount += 1
     }
-    
+
     func allocateCustomer() -> Client? {
         return clientQueue.dequeue()
     }

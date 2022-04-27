@@ -8,10 +8,14 @@
 import Foundation
 
 struct BankClerk {
-    var isWorking: Bool
-    //weak private var bank: Bank
-    
+    // var isWorking: Bool
+    unowned private var bank: Bank
+
+    init(bank: Bank) {
+        self.bank = bank
+    }
+
     func work() {
-        
+
     }
 }
