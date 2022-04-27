@@ -13,7 +13,6 @@ class Bank {
     private let spendingTimeForAClient: Float
     private var totalWorkingTime: Float = 0
     private var finishedClientCount = 0
-    
     private lazy var bankClerkQueue: Queue<BankClerk> = {
         return makeBankClerkQueue()
     }()
@@ -33,5 +32,12 @@ class Bank {
         }
         
         return bankClerkQueue
+    }
+    
+    func startWork() {
+        while bankClerkQueue.isEmpty() == false {
+            let bankClerk = bankClerkQueue.dequeue()
+            bankClerk?.work()
+        }
     }
 }
