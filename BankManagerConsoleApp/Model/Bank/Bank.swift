@@ -10,14 +10,14 @@ import Foundation
 class Bank {
     private var clientQueue: Queue<Client>
     private let clerkCount: Int
-    private let spendingTimeForAClient: Float
-    private(set) var totalWorkingTime: Float = 0
+    private let spendingTimeForAClient: Double
+    private(set) var totalWorkingTime: Double = 0
     private(set) var finishedClientCount = 0
     private lazy var bankClerkQueue: Queue<BankClerk> = {
         return makeBankClerkQueue()
     }()
 
-    init(clientQueue: Queue<Client>, clerkCount: Int, spendingTimeForAClient: Float) {
+    init(clientQueue: Queue<Client>, clerkCount: Int, spendingTimeForAClient: Double) {
         self.clientQueue = clientQueue
         self.clerkCount = clerkCount
         self.spendingTimeForAClient = spendingTimeForAClient
@@ -27,7 +27,8 @@ class Bank {
         var bankClerkQueue = Queue<BankClerk>()
 
         for _ in 1...clerkCount {
-            let bankClerk = BankClerk(bank: self)
+            let bankClerk = BankClerk(bank: self,
+                                      spendingTimeForAClient: spendingTimeForAClient)
             bankClerkQueue.enqueue(bankClerk)
         }
 
