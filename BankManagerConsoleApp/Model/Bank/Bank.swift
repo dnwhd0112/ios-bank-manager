@@ -11,8 +11,8 @@ class Bank {
     private let clientQueue: Queue<Client>
     private let clerkCount: Int
     private let spendingTimeForAClient: Float
-    private var totalWorkingTime: Float = 0
-    private var finishedClientCount = 0
+    private(set) var totalWorkingTime: Float = 0
+    private(set) var finishedClientCount = 0
     private lazy var bankClerkQueue: Queue<BankClerk> = {
         return makeBankClerkQueue()
     }()
@@ -39,5 +39,14 @@ class Bank {
             let bankClerk = bankClerkQueue.dequeue()
             bankClerk?.work()
         }
+    }
+    
+    func updateWorkData() {
+        totalWorkingTime += spendingTimeForAClient
+        finishedClientCount += 1
+    }
+    
+    func allocateCustomer() -> Client? {
+        return clientQueue.dequeue()
     }
 }
