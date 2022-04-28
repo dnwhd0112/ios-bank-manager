@@ -30,7 +30,7 @@ struct BankClerk {
             print("\(client.WaitingNumber) \(BankClerkMessage.startWorkMessage)")
             let usecondsTimeForAClient = useconds_t(spendingTimeForAClient * 1000000)
             usleep(usecondsTimeForAClient)
-            bank.updateWorkData()
+            bank.updateWorkData(spendedTime: spendingTimeForAClient)
             print("\(client.WaitingNumber) \(BankClerkMessage.finishedWorkMessage)")
         }
     }

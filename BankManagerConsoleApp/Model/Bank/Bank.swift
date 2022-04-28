@@ -42,8 +42,8 @@ class Bank {
         }
     }
 
-    func updateWorkData() {
-        totalWorkingTime += spendingTimeForAClient
+    func updateWorkData(spendedTime: Double) {
+        totalWorkingTime += spendedTime
         finishedClientCount += 1
     }
 
