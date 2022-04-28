@@ -13,8 +13,8 @@ struct ClientManeger {
     private lazy var randomClientCount: Int = {
         return Int.random(in: minClientCount...maxClientCount)
     }()
-    
-    init(minClientCount: Int, maxClientCount: Int){
+
+    init(minClientCount: Int, maxClientCount: Int) {
         self.minClientCount = minClientCount
         self.maxClientCount = maxClientCount
     }
