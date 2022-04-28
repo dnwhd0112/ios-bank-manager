@@ -14,6 +14,7 @@ struct BankProcess {
         static let maxClient = 30
         static let clerkCount = 1
         static let spendingTimeForAClient: Double = 0.7
+        static let finishMessageFormat = "업무가 마감되었습니다. 오늘 업무를 처리한 고객은 총 %d명이며, 총 업무시간은 %.2d초입니다."
     }
     
     private var clientManeger: ClientManeger
@@ -22,5 +23,17 @@ struct BankProcess {
     init() {
         clientManeger = ClientManeger(minClientCount: BankProcessConstant.minClient, maxClientCount: BankProcessConstant.maxClient)
         bank = Bank(clientQueue: clientManeger.makeClientQueue(), clerkCount: BankProcessConstant.clerkCount, spendingTimeForAClient: BankProcessConstant.spendingTimeForAClient)
+    }
+    
+    func processStart() {
+        bank.startWork()
+        printBankFinish()
+    }
+    
+    func printBankFinish() {
+        let totalClientCount = bank.finishedClientCount
+        let totalWorkingTime = bank.totalWorkingTime
+        
+        print(String(format: BankProcessConstant.finishMessageFormat, totalClientCount,totalWorkingTime))
     }
 }
