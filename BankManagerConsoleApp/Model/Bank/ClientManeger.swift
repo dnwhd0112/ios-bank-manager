@@ -13,6 +13,11 @@ struct ClientManeger {
     private lazy var randomClientCount: Int = {
         return Int.random(in: minClientCount...maxClientCount)
     }()
+    
+    init(minClientCount: Int, maxClientCount: Int){
+        self.minClientCount = minClientCount
+        self.maxClientCount = maxClientCount
+    }
 
     mutating func makeClientQueue() -> Queue<Client> {
         var queue = Queue<Client>()
