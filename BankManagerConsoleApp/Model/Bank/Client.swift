@@ -9,4 +9,5 @@ import Foundation
 
 struct Client {
     let waitingNumber: Int
+    let workType: WorkType
 }

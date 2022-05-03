@@ -7,23 +7,20 @@
 
 import Foundation
 
-struct BankClerk {
-    private enum Constant {
-        static let startWorkMessage = "고객 업무 시작"
-        static let finishedWorkMessage = "고객 업무 완료"
-        static let spendingTimeForClient: Double = 0.7
-    }
+protocol BankClerk {
+    var spendingTimeForClient: Double { get }
+    var workType: WorkType { get }
+    func work(client: Client)
+}
 
-    let spendingTimeForClient: Double
-
-    init(spendingTimeForClient: Double = Constant.spendingTimeForClient) {
-        self.spendingTimeForClient = spendingTimeForClient
-    }
+extension BankClerk {
+    var startWorkMessage: String { return "고객 업무 시작" }
+    var finishedWorkMessage: String { return "고객 업무 완료" }
 
     func work(client: Client) {
-        print("\(client.waitingNumber) \(Constant.startWorkMessage)")
+        print("\(client.waitingNumber) \(startWorkMessage)")
         let usecondsTimeForAClient = useconds_t(spendingTimeForClient * 1000000)
         usleep(usecondsTimeForAClient)
-        print("\(client.waitingNumber) \(Constant.finishedWorkMessage)")
+        print("\(client.waitingNumber) \(finishedWorkMessage)")
     }
 }

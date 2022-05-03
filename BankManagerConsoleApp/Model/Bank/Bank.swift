@@ -9,19 +9,28 @@ import Foundation
 
 final class Bank {
     private enum Constant {
-        static let clerkCount = 1
         static let finishMessageFormat = "업무가 마감되었습니다. 오늘 업무를 처리한 고객은 총 %d명이며, 총 업무시간은 %.2f초입니다."
     }
+
+    private let depositBankClerkCount = 2
+    private let loanBankClerkCount = 1
 
     private var clientQueue: Queue<Client>
     private var totalWorkingTime: Double = 0
     private var finishedClientCount = 0
+    private lazy var loanDispatchSemaphore = DispatchSemaphore(value: loanBankClerkCount)
+    private lazy var depositDispatchSemaphore = DispatchSemaphore(value: depositBankClerkCount)
 
     private lazy var bankClerkQueue: Queue<BankClerk> = {
         var bankClerkQueue = Queue<BankClerk>()
 
-        for _ in 1...Constant.clerkCount {
-            let bankClerk = BankClerk()
+        for _ in 1...depositBankClerkCount {
+            let bankClerk = DepositBankClerk()
+            bankClerkQueue.enqueue(bankClerk)
+        }
+
+        for _ in 1...loanBankClerkCount {
+            let bankClerk = LoanBankClerk()
             bankClerkQueue.enqueue(bankClerk)
         }
 

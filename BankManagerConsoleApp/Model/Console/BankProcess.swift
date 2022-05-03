@@ -20,9 +20,12 @@ struct BankProcess {
         let randomClientCount = Int.random(in: Constant.minClientCount...Constant.maxClientCount)
 
         for waitingNumber in 1...randomClientCount {
-            clientQueue.enqueue(Client(waitingNumber: waitingNumber))
+            if waitingNumber % 5 == 0 {
+                clientQueue.enqueue(Client(waitingNumber: waitingNumber, workType: WorkType.deposit))
+            } else {
+                clientQueue.enqueue(Client(waitingNumber: waitingNumber, workType: WorkType.loan))
+            }
         }
-
         bank = Bank(clientQueue: clientQueue)
     }
 
