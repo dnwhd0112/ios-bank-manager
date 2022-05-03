@@ -21,13 +21,19 @@ final class Bank {
     private lazy var loanDispatchSemaphore = DispatchSemaphore(value: loanBankClerkCount)
     private lazy var depositDispatchSemaphore = DispatchSemaphore(value: depositBankClerkCount)
 
-    private lazy var bankClerkQueue: Queue<BankClerk> = {
+    private lazy var depositBankClerkQueue: Queue<BankClerk> = {
         var bankClerkQueue = Queue<BankClerk>()
 
         for _ in 1...depositBankClerkCount {
             let bankClerk = DepositBankClerk()
             bankClerkQueue.enqueue(bankClerk)
         }
+
+        return bankClerkQueue
+    }()
+
+    private lazy var loanBankClerkQueue: Queue<BankClerk> = {
+        var bankClerkQueue = Queue<BankClerk>()
 
         for _ in 1...loanBankClerkCount {
             let bankClerk = LoanBankClerk()
@@ -43,15 +49,31 @@ final class Bank {
 
     func startWork() {
         while clientQueue.isEmpty() == false {
-            guard let bankClerk = bankClerkQueue.dequeue(),
-                  let client = clientQueue.dequeue()
-            else {
+            guard let client = clientQueue.dequeue() else {
                 return
             }
-
-            bankClerk.work(client: client)
-            updateWorkData(spendedTime: bankClerk.spendingTimeForClient)
-            bankClerkQueue.enqueue(bankClerk)
+            DispatchQueue.global().async {
+                switch client.workType {
+                case .deposit:
+                    self.depositDispatchSemaphore.wait()
+                    guard let depositBankClerk = self.depositBankClerkQueue.dequeue() else {
+                        return
+                    }
+                    depositBankClerk.work(client: client)
+                    self.updateWorkData(spendedTime: depositBankClerk.spendingTimeForClient)
+                    self.depositBankClerkQueue.enqueue(depositBankClerk)
+                    self.depositDispatchSemaphore.signal()
+                case .loan:
+                    self.loanDispatchSemaphore.wait()
+                    guard let loanBankClerk = self.loanBankClerkQueue.dequeue() else {
+                        return
+                    }
+                    loanBankClerk.work(client: client)
+                    self.updateWorkData(spendedTime: loanBankClerk.spendingTimeForClient)
+                    self.depositBankClerkQueue.enqueue(loanBankClerk)
+                    self.loanDispatchSemaphore.signal()
+                }
+            }
         }
 
         print(String(format: Constant.finishMessageFormat), finishedClientCount, totalWorkingTime)
