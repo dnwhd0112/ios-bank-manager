@@ -12,14 +12,16 @@ final class Bank {
         static let finishMessageFormat = "업무가 마감되었습니다. 오늘 업무를 처리한 고객은 총 %d명이며, 총 업무시간은 %.2f초입니다."
     }
 
-    private let depositBankClerkCount = 2
-    private let loanBankClerkCount = 1
+    private let depositBankClerkCount = 1
+    private let loanBankClerkCount = 2
 
     private var clientQueue: Queue<Client>
     private var totalWorkingTime: Double = 0
     private var finishedClientCount = 0
-    private lazy var loanDispatchSemaphore = DispatchSemaphore(value: loanBankClerkCount)
-    private lazy var depositDispatchSemaphore = DispatchSemaphore(value: depositBankClerkCount)
+    private var loanDispatchSemaphore: DispatchSemaphore
+    private var depositDispatchSemaphore: DispatchSemaphore
+
+    private var dispatchQueue = DispatchQueue(label: "순차")
 
     private lazy var depositBankClerkQueue: Queue<BankClerk> = {
         var bankClerkQueue = Queue<BankClerk>()
@@ -45,37 +47,38 @@ final class Bank {
 
     init(clientQueue: Queue<Client>) {
         self.clientQueue = clientQueue
+        loanDispatchSemaphore = DispatchSemaphore(value: loanBankClerkCount)
+        depositDispatchSemaphore = DispatchSemaphore(value: depositBankClerkCount)
     }
 
     func startWork() {
+        let group = DispatchGroup()
         while clientQueue.isEmpty() == false {
             guard let client = clientQueue.dequeue() else {
                 return
             }
-            DispatchQueue.global().async {
+            dispatchQueue.async(group: group) {
                 switch client.workType {
                 case .deposit:
-                    self.depositDispatchSemaphore.wait()
-                    guard let depositBankClerk = self.depositBankClerkQueue.dequeue() else {
-                        return
+                    DispatchQueue.global().async(group: group) {
+                        self.depositDispatchSemaphore.wait()
+                        let depositBankClerk = DepositBankClerk()
+                        depositBankClerk.work(client: client)
+                        self.updateWorkData(spendedTime: depositBankClerk.spendingTimeForClient)
+                        self.depositDispatchSemaphore.signal()
                     }
-                    depositBankClerk.work(client: client)
-                    self.updateWorkData(spendedTime: depositBankClerk.spendingTimeForClient)
-                    self.depositBankClerkQueue.enqueue(depositBankClerk)
-                    self.depositDispatchSemaphore.signal()
-                case .loan:
-                    self.loanDispatchSemaphore.wait()
-                    guard let loanBankClerk = self.loanBankClerkQueue.dequeue() else {
-                        return
+                    case .loan:
+                    DispatchQueue.global().async(group: group) {
+                        self.loanDispatchSemaphore.wait()
+                        let loanBankClerk = LoanBankClerk()
+                        loanBankClerk.work(client: client)
+                        self.updateWorkData(spendedTime: loanBankClerk.spendingTimeForClient)
+                        self.loanDispatchSemaphore.signal()
                     }
-                    loanBankClerk.work(client: client)
-                    self.updateWorkData(spendedTime: loanBankClerk.spendingTimeForClient)
-                    self.depositBankClerkQueue.enqueue(loanBankClerk)
-                    self.loanDispatchSemaphore.signal()
                 }
             }
         }
-
+        group.wait()
         print(String(format: Constant.finishMessageFormat), finishedClientCount, totalWorkingTime)
     }
 

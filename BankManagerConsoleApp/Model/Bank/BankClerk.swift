@@ -18,9 +18,9 @@ extension BankClerk {
     var finishedWorkMessage: String { return "고객 업무 완료" }
 
     func work(client: Client) {
-        print("\(client.waitingNumber) \(startWorkMessage)")
+        print("\(client.workType) \(client.waitingNumber) \(startWorkMessage)")
         let usecondsTimeForAClient = useconds_t(spendingTimeForClient * 1000000)
         usleep(usecondsTimeForAClient)
-        print("\(client.waitingNumber) \(finishedWorkMessage)")
+        print("\(client.workType) \(client.waitingNumber) \(finishedWorkMessage)")
     }
 }
