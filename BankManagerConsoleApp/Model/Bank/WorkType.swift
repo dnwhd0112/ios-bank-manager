@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum WorkType {
+enum WorkType: CaseIterable {
     case loan
     case deposit
 }

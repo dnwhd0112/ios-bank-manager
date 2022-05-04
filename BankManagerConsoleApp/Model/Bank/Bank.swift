@@ -21,7 +21,7 @@ final class Bank {
     private var loanDispatchSemaphore: DispatchSemaphore
     private var depositDispatchSemaphore: DispatchSemaphore
 
-    private var dispatchQueue = DispatchQueue(label: "순차")
+    static var dispatchQueue = DispatchQueue(label: "순차")
 
     private lazy var depositBankClerkQueue: Queue<BankClerk> = {
         var bankClerkQueue = Queue<BankClerk>()
@@ -57,23 +57,26 @@ final class Bank {
             guard let client = clientQueue.dequeue() else {
                 return
             }
-            dispatchQueue.async(group: group) {
+            Bank.dispatchQueue.async(group: group) {
                 switch client.workType {
                 case .deposit:
+                    self.depositDispatchSemaphore.wait()
                     DispatchQueue.global().async(group: group) {
-                        self.depositDispatchSemaphore.wait()
                         let depositBankClerk = DepositBankClerk()
-                        depositBankClerk.work(client: client)
-                        self.updateWorkData(spendedTime: depositBankClerk.spendingTimeForClient)
+                        depositBankClerk.work(client: client) {updateData in
+                            self.updateWorkData(spendedTime: updateData)
+                        }
                         self.depositDispatchSemaphore.signal()
                     }
                     case .loan:
+                    self.loanDispatchSemaphore.wait()
                     DispatchQueue.global().async(group: group) {
-                        self.loanDispatchSemaphore.wait()
                         let loanBankClerk = LoanBankClerk()
-                        loanBankClerk.work(client: client)
-                        self.updateWorkData(spendedTime: loanBankClerk.spendingTimeForClient)
+                        loanBankClerk.work(client: client) { updateData in
+                            self.updateWorkData(spendedTime: updateData)
+                        }
                         self.loanDispatchSemaphore.signal()
+
                     }
                 }
             }
