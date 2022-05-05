@@ -15,20 +15,14 @@ final class Bank {
         static let depositBankClerkCount = 2
     }
 
-    private var clientQueue: Queue<Client>
     private var finishedClientCount = 0
     private let loanSemaphore = DispatchSemaphore(value: Constant.loanBankClerkCount)
     private let depositSemaphore = DispatchSemaphore(value: Constant.depositBankClerkCount)
     private let group = DispatchGroup()
     private let bankUpdateDispatchQueue = DispatchQueue(label: "BankUpdate")
-    var from: CFAbsoluteTime?
 
-    init(clientQueue: Queue<Client>) {
-        self.clientQueue = clientQueue
-    }
 
-    func startWork() {
-        setTimer()
+    func startWork(clientQueue: inout Queue<Client>) {
         while clientQueue.isEmpty() == false {
             guard let client = clientQueue.dequeue() else {
                 return
@@ -52,7 +46,7 @@ final class Bank {
             }
         }
         group.wait()
-        print(String(format: Constant.finishMessageFormat, finishedClientCount, checkTime()))
+        
     }
 }
 
@@ -61,10 +55,5 @@ extension Bank: BankDelegate {
         bankUpdateDispatchQueue.async(group: group) {
             self.finishedClientCount += 1
         }
-    }
-}
-extension Bank: Timer {
-    func setTimer() {
-        from = CFAbsoluteTimeGetCurrent()
     }
 }
