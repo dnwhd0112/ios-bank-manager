@@ -25,6 +25,28 @@ struct ViewPreview: PreviewProvider {
 }
 
 class ViewController: UIViewController {
+    let waitingClientVerticalStackView: UIStackView = {
+        let stackView = UIStackView()
+        
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .fill
+        stackView.distribution = .fill
+
+        return stackView
+    }()
+    
+    let workingClientVerticalStackView: UIStackView = {
+        let stackView = UIStackView()
+        
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        stackView.axis = .vertical
+        stackView.alignment = .fill
+        stackView.distribution = .equalSpacing
+
+        return stackView
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -92,30 +114,6 @@ class ViewController: UIViewController {
         workingLabel.textAlignment = .center
         workingLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let waitingClientVerticalStackView: UIStackView = {
-            let stackView = UIStackView()
-            
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.axis = .vertical
-            stackView.alignment = .fill
-            stackView.distribution = .equalSpacing
-
-            return stackView
-        }()
-        
-        
-        let workingClientVerticalStackView: UIStackView = {
-            let stackView = UIStackView()
-            
-            stackView.translatesAutoresizingMaskIntoConstraints = false
-            stackView.axis = .vertical
-            stackView.alignment = .fill
-            stackView.distribution = .equalSpacing
-
-            return stackView
-        }()
-        
-        
         let horizontalStackView3: UIStackView = {
             let stackView = UIStackView()
             
@@ -146,7 +144,10 @@ class ViewController: UIViewController {
         
         waitingClientVerticalStackView.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.7).isActive = true
         workingClientVerticalStackView.heightAnchor.constraint(equalTo: safeArea.heightAnchor, multiplier: 0.7).isActive = true
+        
+        bankProcess.setBank(delegate: self)
     }
+    
     
     //MARK: ViewdidLoard 끝
     var bankProcess = BankProcess()
@@ -156,4 +157,50 @@ class ViewController: UIViewController {
         bankProcess.addClientQueue()
     }
     
+}
+
+protocol ViewControllerDelegate: AnyObject {
+    func addWaitingClientLabel(text: String, color: UIColor)
+    func addWorkingClientLabel(text: String, color: UIColor)
+    func removeWorkingClientLable(text: String, color: UIColor)
+}
+
+extension ViewController: ViewControllerDelegate {
+    func addWaitingClientLabel(text: String, color: UIColor) {
+        let label = UILabel()
+        label.textColor = color
+        label.text = text
+        label.textAlignment = .center
+        
+        waitingClientVerticalStackView.addArrangedSubview(label)
+    }
+    
+    func addWorkingClientLabel(text: String, color: UIColor) {
+        let label = waitingClientVerticalStackView.arrangedSubviews.filter{
+            if let label = $0 as? UILabel, label.text == text {
+                return true
+            }
+            return false
+        }
+        
+        label.forEach{
+            waitingClientVerticalStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+            workingClientVerticalStackView.addArrangedSubview($0)
+        }
+    }
+    
+    func removeWorkingClientLable(text: String, color: UIColor) {
+        let label = workingClientVerticalStackView.arrangedSubviews.filter{
+            if let label = $0 as? UILabel, label.text == text {
+                return true
+            }
+            return false
+        }
+        
+        label.forEach{
+            workingClientVerticalStackView.removeArrangedSubview($0)
+            $0.removeFromSuperview()
+        }
+    }
 }

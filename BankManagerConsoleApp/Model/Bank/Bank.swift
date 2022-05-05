@@ -20,6 +20,7 @@ final class Bank {
     private let depositSemaphore = DispatchSemaphore(value: Constant.depositBankClerkCount)
     private let group = DispatchGroup()
     private let bankUpdateDispatchQueue = DispatchQueue(label: "BankUpdate")
+    weak var delegate: ViewControllerDelegate?
 
 
     func startWork(clientQueue: inout Queue<Client>) {
@@ -30,23 +31,35 @@ final class Bank {
 
             switch client.taskType {
             case .deposit:
+                delegate?.addWaitingClientLabel(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .black)
                 DispatchQueue.global().async(group: group) {
                     self.depositSemaphore.wait()
+                    DispatchQueue.main.sync {
+                        self.delegate?.addWorkingClientLabel(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .black)
+                    }
                     let depositBankClerk = DepositBankClerk(delegate: self)
                     depositBankClerk.work(client: client)
+                    DispatchQueue.main.sync {
+                        self.delegate?.removeWorkingClientLable(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .black)
+                    }
                     self.depositSemaphore.signal()
                 }
             case .loan:
+                delegate?.addWaitingClientLabel(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .purple)
                 DispatchQueue.global().async(group: group) {
                     self.loanSemaphore.wait()
+                    DispatchQueue.main.sync {
+                        self.delegate?.addWorkingClientLabel(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .purple)
+                    }
                     let loanBankClerk = LoanBankClerk(delegate: self)
                     loanBankClerk.work(client: client)
+                    DispatchQueue.main.sync {
+                        self.delegate?.removeWorkingClientLable(text: "\(client.waitingNumber)고객, \(client.taskType.text)", color: .purple)
+                    }
                     self.loanSemaphore.signal()
                 }
             }
         }
-        group.wait()
-        
     }
 }
 

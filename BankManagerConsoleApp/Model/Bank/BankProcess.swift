@@ -13,16 +13,25 @@ struct BankProcess {
     }
 
     private var bank: Bank
-
+    private var currentNumber: Int = 1
+    private var endNumber: Int {
+        return currentNumber + Constant.clientCount
+    }
+    
     init() {
         bank = Bank()
     }
 
     mutating func addClientQueue() {
         var clientQueue = Queue<Client>()
-        for waitingNumber in 1...Constant.clientCount {
+        for waitingNumber in currentNumber..<endNumber {
             clientQueue.enqueue(Client(waitingNumber: waitingNumber))
         }
-//      bank.처리하는메서드(clientQueue)
+        currentNumber += Constant.clientCount
+        bank.startWork(clientQueue: &clientQueue)
+    }
+    
+    func setBank(delegate: ViewControllerDelegate) {
+        bank.delegate = delegate
     }
 }
