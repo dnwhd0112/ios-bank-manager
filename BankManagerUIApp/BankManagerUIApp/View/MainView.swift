@@ -8,7 +8,6 @@
 import UIKit
 
 final class MainView: UIView {
-
     let waitingClientVerticalStackView: UIStackView = {
         let stackView = UIStackView()
         stackView.translatesAutoresizingMaskIntoConstraints = false
@@ -136,8 +135,10 @@ final class MainView: UIView {
         bottomHorizontalStackView.addArrangedSubview(waitingClientVerticalStackView)
         bottomHorizontalStackView.addArrangedSubview(workingClientVerticalStackView)
         
-        waitingClientVerticalStackView.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor, multiplier: 0.7).isActive = true
-        workingClientVerticalStackView.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor, multiplier: 0.7).isActive = true
+        waitingClientVerticalStackView.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor,
+                                                               multiplier: 0.7).isActive = true
+        workingClientVerticalStackView.heightAnchor.constraint(equalTo: safeAreaLayoutGuide.heightAnchor,
+                                                               multiplier: 0.7).isActive = true
     }
 }
 

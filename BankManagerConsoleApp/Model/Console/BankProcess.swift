@@ -28,6 +28,6 @@ struct BankProcess {
             clientQueue.enqueue(Client(waitingNumber: waitingNumber))
         }
         currentNumber += Constant.clientCount
-        bank.startWork(clientQueue: &clientQueue)
+        bank.startWork(queue: clientQueue)
     }
 }

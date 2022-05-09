@@ -27,7 +27,8 @@ final class Bank {
     private let bankGroup = DispatchGroup()
     weak var delegate: BankViewDelegate?
 
-    func startWork(clientQueue: inout Queue<Client>) {
+    func startWork(queue: Queue<Client>) {
+        var clientQueue = queue
         delegate?.startTimer()
         while clientQueue.isEmpty() == false {
             guard let client = clientQueue.dequeue() else {
@@ -44,17 +45,16 @@ final class Bank {
             
             DispatchQueue.global().async(group: bankGroup) { [weak self] in
                 taskTypeSemphore.wait()
-                print(Thread.isMainThread)
                 let bankClerk = BankClerk()
                 bankClerk.work(client: client, ready: {
                     DispatchQueue.main.async {
                         self?.delegate?.addWorkingClientLabel(text: clientTaskTypeText,
-                                                             color: clientTextColor)
+                                                              color: clientTextColor)
                     }
                 }) {
                     DispatchQueue.main.async {
                         self?.delegate?.removeWorkingClientLabel(text: clientTaskTypeText,
-                                                                color: clientTextColor)
+                                                                 color: clientTextColor)
                     }
                     self?.finishedClientCount += 1
                     taskTypeSemphore.signal()
